@@ -1,0 +1,426 @@
+<!-- EJEMPLO VIDEOS-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>WebAR: 5 Videos - Detección Exclusiva</title>
+    <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+      a-scene {
+        position: absolute !important;
+        top: 0;
+        left: 0;
+        width: 100% !important;
+        height: 100% !important;
+      }
+      /* Modal de consentimiento */
+      #modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 10000;
+      }
+      #modal .card {
+        width: min(92%, 420px);
+        background: #fff;
+        color: #111;
+        border-radius: 16px;
+        padding: 18px;
+        font-family: system-ui, sans-serif;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+      #modal h2 {
+        margin: 0 0 8px;
+        font-size: 18px;
+      }
+      #modal p {
+        margin: 0 0 14px;
+      }
+      #modal button {
+        padding: 10px 14px;
+        border: 0;
+        border-radius: 10px;
+        font-weight: 700;
+        background: #0b9685;
+        color: #fff;
+        cursor: pointer;
+      }
+      /* Alerta de múltiples marcadores */
+      #alertMultiple {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(255, 59, 48, 0.95);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-family: system-ui, sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        z-index: 9999;
+        display: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        animation: slideDown 0.3s ease-out;
+      }
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateX(-50%) translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Modal de consentimiento de audio -->
+    <div id="modal">
+      <div class="card">
+        <h2>Activar audio</h2>
+        <p>Para empezar permita activar el audio.</p>
+        <button id="btnConsent">🔊 Permitir audio</button>
+      </div>
+    </div>
+
+    <!-- Alerta de múltiples marcadores -->
+    <div id="alertMultiple">⚠️ Solo se puede detectar un marcador a la vez</div>
+
+    <!-- Videos fuera de a-assets -->
+    <video
+      id="video1"
+      src="Assets/videos/clip_SALUD.mp4"
+      preload="metadata"
+      crossorigin="anonymous"
+      playsinline
+      webkit-playsinline
+      muted
+      style="display: none"
+    ></video>
+    <video
+      id="video2"
+      src="Assets/videos/clip_OBRAS.mp4"
+      preload="metadata"
+      crossorigin="anonymous"
+      playsinline
+      webkit-playsinline
+      muted
+      style="display: none"
+    ></video>
+    <video
+      id="video3"
+      src="Assets/videos/clip_SEGURIDAD.mp4"
+      preload="metadata"
+      crossorigin="anonymous"
+      playsinline
+      webkit-playsinline
+      muted
+      style="display: none"
+    ></video>
+    <video
+      id="video4"
+      src="Assets/videos/clip_EDUCACION.mp4"
+      preload="metadata"
+      crossorigin="anonymous"
+      playsinline
+      webkit-playsinline
+      muted
+      style="display: none"
+    ></video>
+    <video
+      id="video5"
+      src="Assets/videos/clip_IDENTIDAD.mp4"
+      preload="metadata"
+      crossorigin="anonymous"
+      playsinline
+      webkit-playsinline
+      muted
+      style="display: none"
+    ></video>
+
+    <!-- Posters -->
+    <img
+      id="poster1"
+      src="Assets/imgs/poster.jpg"
+      crossorigin="anonymous"
+      style="display: none"
+    />
+    <img
+      id="poster2"
+      src="Assets/imgs/poster.jpg"
+      crossorigin="anonymous"
+      style="display: none"
+    />
+    <img
+      id="poster3"
+      src="Assets/imgs/poster.jpg"
+      crossorigin="anonymous"
+      style="display: none"
+    />
+    <img
+      id="poster4"
+      src="Assets/imgs/poster.jpg"
+      crossorigin="anonymous"
+      style="display: none"
+    />
+    <img
+      id="poster5"
+      src="Assets/imgs/poster.jpg"
+      crossorigin="anonymous"
+      style="display: none"
+    />
+
+    <a-scene
+      mindar-image="imageTargetSrc: targets.mind;"
+      color-space="sRGB"
+      embedded
+      renderer="alpha:true; antialias:true"
+      vr-mode-ui="enabled:false"
+      device-orientation-permission-ui="enabled:false"
+      loading-screen="enabled:false"
+    >
+      <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
+
+      <!-- Target 1 -->
+      <a-entity id="target1" mindar-image-target="targetIndex: 0">
+        <a-plane
+          id="plane1"
+          position="0 0 0"
+          width="1.6"
+          height="0.9"
+          material="shader:flat; src:#video1; transparent:true"
+        ></a-plane>
+      </a-entity>
+
+      <!-- Target 2 -->
+      <a-entity id="target2" mindar-image-target="targetIndex: 1">
+        <a-plane
+          id="plane2"
+          position="0 0 0"
+          width="1.6"
+          height="0.9"
+          material="shader:flat; src:#video2; transparent:true"
+        ></a-plane>
+      </a-entity>
+
+      <!-- Target 3 -->
+      <a-entity id="target3" mindar-image-target="targetIndex: 2">
+        <a-plane
+          id="plane3"
+          position="0 0 0"
+          width="1.6"
+          height="0.9"
+          material="shader:flat; src:#video3; transparent:true"
+        ></a-plane>
+      </a-entity>
+
+      <!-- Target 4 -->
+      <a-entity id="target4" mindar-image-target="targetIndex: 3">
+        <a-plane
+          id="plane4"
+          position="0 0 0"
+          width="1.6"
+          height="0.9"
+          material="shader:flat; src:#video4; transparent:true"
+        ></a-plane>
+      </a-entity>
+
+      <!-- Target 5 -->
+      <a-entity id="target5" mindar-image-target="targetIndex: 4">
+        <a-plane
+          id="plane5"
+          position="0 0 0"
+          width="1.6"
+          height="0.9"
+          material="shader:flat; src:#video5; transparent:true"
+        ></a-plane>
+      </a-entity>
+    </a-scene>
+
+    <script>
+      const LS_KEY = "webarAudioConsent";
+      const modal = document.getElementById("modal");
+      const btnConsent = document.getElementById("btnConsent");
+      const alertMultiple = document.getElementById("alertMultiple");
+
+      let audioUnlocked = false;
+      let activeTargets = new Set(); // Marcadores detectados actualmente
+      let currentPlayingIndex = null; // Índice del video actualmente reproduciendo
+      let alertTimeout = null;
+
+      // Configuración de los 5 videos
+      const videoConfigs = [
+        {
+          video: document.getElementById("video1"),
+          poster: document.getElementById("poster1"),
+          plane: document.getElementById("plane1"),
+          target: document.getElementById("target1"),
+        },
+        {
+          video: document.getElementById("video2"),
+          poster: document.getElementById("poster2"),
+          plane: document.getElementById("plane2"),
+          target: document.getElementById("target2"),
+        },
+        {
+          video: document.getElementById("video3"),
+          poster: document.getElementById("poster3"),
+          plane: document.getElementById("plane3"),
+          target: document.getElementById("target3"),
+        },
+        {
+          video: document.getElementById("video4"),
+          poster: document.getElementById("poster4"),
+          plane: document.getElementById("plane4"),
+          target: document.getElementById("target4"),
+        },
+        {
+          video: document.getElementById("video5"),
+          poster: document.getElementById("poster5"),
+          plane: document.getElementById("plane5"),
+          target: document.getElementById("target5"),
+        },
+      ];
+
+      // Mostrar modal solo si no hay consentimiento guardado
+      if (localStorage.getItem(LS_KEY) !== "1") {
+        modal.style.display = "flex";
+      } else {
+        audioUnlocked = true;
+      }
+
+      // Funciones auxiliares
+      function setPlaneToVideo(config) {
+        config.plane.setAttribute(
+          "material",
+          `shader:flat; src:#${config.video.id}; transparent:true`
+        );
+      }
+
+      function setPlaneToPoster(config) {
+        config.plane.setAttribute(
+          "material",
+          `shader:flat; src:#${config.poster.id}; transparent:false`
+        );
+      }
+
+      function showMultipleMarkersAlert() {
+        alertMultiple.style.display = "block";
+        clearTimeout(alertTimeout);
+        alertTimeout = setTimeout(() => {
+          alertMultiple.style.display = "none";
+        }, 3000);
+      }
+
+      async function playVideo(config, withAudio) {
+        try {
+          config.video.muted = !withAudio;
+          if (withAudio) {
+            config.video.removeAttribute("muted");
+            config.video.volume = 1.0;
+          }
+          setPlaneToVideo(config);
+          await config.video.play();
+        } catch (e) {
+          try {
+            config.video.muted = true;
+            await config.video.play();
+          } catch (_) {}
+        }
+      }
+
+      function stopVideo(config) {
+        config.video.pause();
+        config.video.currentTime = 0;
+      }
+
+      function stopAllVideos() {
+        videoConfigs.forEach((config) => {
+          stopVideo(config);
+        });
+      }
+
+      // Configurar eventos para cada target
+      videoConfigs.forEach((config, index) => {
+        // Evento: marcador detectado
+        config.target.addEventListener("targetFound", async () => {
+		  console.log(`🎯 Marcador detectado: ${config.name} (Index: ${index})`);
+          activeTargets.add(index);
+
+          // Si hay más de un marcador activo, mostrar alerta
+          if (activeTargets.size > 1) {
+            showMultipleMarkersAlert();
+            return;
+          }
+
+          // Si es el único marcador, reproducir su video
+          stopAllVideos();
+          currentPlayingIndex = index;
+          setPlaneToVideo(config);
+          config.video.currentTime = 0;
+          await playVideo(config, audioUnlocked);
+        });
+
+        // Evento: marcador perdido
+        config.target.addEventListener("targetLost", () => {
+          activeTargets.delete(index);
+
+          // Si era el video que se estaba reproduciendo, detenerlo
+          if (currentPlayingIndex === index) {
+            stopVideo(config);
+            currentPlayingIndex = null;
+          }
+
+          // Si ya no hay múltiples marcadores, ocultar alerta
+          if (activeTargets.size <= 1) {
+            alertMultiple.style.display = "none";
+          }
+
+          // Si queda un solo marcador activo, reproducir su video
+          if (activeTargets.size === 1) {
+            const remainingIndex = Array.from(activeTargets)[0];
+            const remainingConfig = videoConfigs[remainingIndex];
+            currentPlayingIndex = remainingIndex;
+            setPlaneToVideo(remainingConfig);
+            remainingConfig.video.currentTime = 0;
+            playVideo(remainingConfig, audioUnlocked);
+          }
+        });
+
+        // Evento: video terminado
+        config.video.addEventListener("ended", () => {
+          setPlaneToPoster(config);
+        });
+      });
+
+      // Botón del modal: desbloquea audio
+      btnConsent?.addEventListener("click", async () => {
+        audioUnlocked = true;
+        localStorage.setItem(LS_KEY, "1");
+        modal.style.display = "none";
+
+        // Precargar videos
+        videoConfigs.forEach((config) => {
+          try {
+            config.video.load();
+          } catch (_) {}
+        });
+      });
+    </script>
+  </body>
+</html>
