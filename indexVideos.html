@@ -93,6 +93,11 @@
         left: 0;
         width: 100% !important;
         height: 100% !important;
+        display: none;
+      }
+
+      a-scene.started {
+        display: block;
       }
 
       /* RADAR PERSONALIZADO */
@@ -109,6 +114,11 @@
         height: 280px;
         pointer-events: none;
         z-index: 100;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      #customRadar.active {
         opacity: 0.9;
       }
 
@@ -385,6 +395,11 @@
         overflow: hidden;
       }
 
+      #modal button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
       #modal button::before {
         content: '';
         position: absolute;
@@ -398,18 +413,33 @@
         transition: width 0.6s, height 0.6s;
       }
 
-      #modal button:hover {
+      #modal button:hover:not(:disabled) {
         transform: translateY(-2px);
         box-shadow: 0 12px 28px rgba(0, 119, 182, 0.4);
       }
 
-      #modal button:hover::before {
+      #modal button:hover:not(:disabled)::before {
         width: 300px;
         height: 300px;
       }
 
-      #modal button:active {
+      #modal button:active:not(:disabled) {
         transform: translateY(0);
+      }
+
+      #modal .error-message {
+        background: #fee;
+        border: 2px solid #f44;
+        color: #c00;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 15px;
+        font-size: 13px;
+        display: none;
+      }
+
+      #modal .error-message.visible {
+        display: block;
       }
 
       /* ALERTA MÚLTIPLES MARCADORES */
@@ -505,6 +535,10 @@
         <button id="btnConsent">
           🔊 Iniciar Experiencia AR
         </button>
+
+        <div id="errorMessage" class="error-message">
+          ⚠️ No se pudo acceder a la cámara. Por favor, verifique los permisos en la configuración de su navegador.
+        </div>
       </div>
     </div>
 
@@ -543,7 +577,8 @@
     <img id="poster5" src="Assets/imgs/poster.jpg" crossorigin="anonymous" style="display: none" />
 
     <a-scene
-      mindar-image="imageTargetSrc: targets.mind;"
+      id="arScene"
+      mindar-image="imageTargetSrc: targets.mind; autoStart: false; uiScanning: no;"
       color-space="sRGB"
       embedded
       renderer="alpha:true; antialias:true"
@@ -555,27 +590,9 @@
 
       <!-- TARGETS CON VIDEOS MÁS GRANDES Y MARCO -->
       <a-entity id="target1" mindar-image-target="targetIndex: 0">
-        <!-- Marco decorativo -->
-        <a-plane
-          position="0 0 -0.01"
-          width="2.2"
-          height="1.3"
-          material="shader:flat; color:#00d9ff; transparent:true; opacity:0.3"
-        ></a-plane>
-        <a-plane
-          position="0 0 -0.02"
-          width="2.3"
-          height="1.4"
-          material="shader:flat; color:#0077b6; transparent:true; opacity:0.2"
-        ></a-plane>
-        <!-- Video -->
-        <a-plane
-          id="plane1"
-          position="0 0 0"
-          width="2.0"
-          height="1.125"
-          material="shader:flat; src:#video1; transparent:true"
-        ></a-plane>
+        <a-plane position="0 0 -0.01" width="2.2" height="1.3" material="shader:flat; color:#00d9ff; transparent:true; opacity:0.3"></a-plane>
+        <a-plane position="0 0 -0.02" width="2.3" height="1.4" material="shader:flat; color:#0077b6; transparent:true; opacity:0.2"></a-plane>
+        <a-plane id="plane1" position="0 0 0" width="2.0" height="1.125" material="shader:flat; src:#video1; transparent:true"></a-plane>
       </a-entity>
 
       <a-entity id="target2" mindar-image-target="targetIndex: 1">
@@ -604,19 +621,21 @@
     </a-scene>
 
     <script>
-      const LS_KEY = "webarAudioConsent";
       const splash = document.getElementById("splash");
       const modal = document.getElementById("modal");
       const btnConsent = document.getElementById("btnConsent");
+      const errorMessage = document.getElementById("errorMessage");
       const alertMultiple = document.getElementById("alertMultiple");
       const customRadar = document.getElementById("customRadar");
       const logoTop = document.getElementById("logoTop");
       const logoBottom = document.getElementById("logoBottom");
+      const arScene = document.getElementById("arScene");
 
       let audioUnlocked = false;
       let activeTargets = new Set();
       let currentPlayingIndex = null;
       let alertTimeout = null;
+      let sceneStarted = false;
 
       const videoConfigs = [
         {
@@ -657,9 +676,9 @@
       ];
 
       // Mostrar modal después del splash
-		setTimeout(() => {
-		  modal.style.display = "flex";
-		}, 3500);
+      setTimeout(() => {
+        modal.style.display = "flex";
+      }, 3500);
 
       function setPlaneToVideo(config) {
         config.plane.setAttribute(
@@ -694,17 +713,11 @@
       }
 
       function hideRadar() {
-        customRadar.style.opacity = "0";
-        setTimeout(() => {
-          customRadar.style.display = "none";
-        }, 300);
+        customRadar.classList.remove("active");
       }
 
       function showRadar() {
-        customRadar.style.display = "block";
-        setTimeout(() => {
-          customRadar.style.opacity = "0.9";
-        }, 10);
+        customRadar.classList.add("active");
       }
 
       async function playVideo(config, withAudio) {
@@ -737,6 +750,49 @@
         videoConfigs.forEach((config) => stopVideo(config));
       }
 
+      async function startARExperience() {
+        try {
+          btnConsent.disabled = true;
+          btnConsent.textContent = "🔄 Solicitando permisos...";
+          errorMessage.classList.remove("visible");
+
+          // Solicitar permisos de cámara y audio explícitamente
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" },
+            audio: true
+          });
+
+          // Detener el stream temporal (MindAR creará el suyo propio)
+          stream.getTracks().forEach(track => track.stop());
+
+          audioUnlocked = true;
+          btnConsent.textContent = "✅ Iniciando experiencia...";
+
+          // Mostrar la escena
+          arScene.classList.add("started");
+
+          // Iniciar MindAR
+          const sceneEl = arScene;
+          await sceneEl.components["mindar-image-system"].start();
+          
+          sceneStarted = true;
+          modal.style.display = "none";
+          showRadar();
+
+          console.log("🚀 AR iniciado correctamente");
+
+        } catch (error) {
+          console.error("❌ Error al iniciar AR:", error);
+          btnConsent.disabled = false;
+          btnConsent.textContent = "🔊 Iniciar Experiencia AR";
+          errorMessage.textContent = error.name === "NotAllowedError" 
+            ? "⚠️ Permisos denegados. Por favor, permita el acceso a la cámara y audio."
+            : "⚠️ No se pudo acceder a la cámara. Verifique los permisos en la configuración.";
+          errorMessage.classList.add("visible");
+        }
+      }
+
+      // Configurar eventos para cada target
       videoConfigs.forEach((config, index) => {
         config.target.addEventListener("targetFound", async () => {
           console.log(`🎯 Detectado: ${config.name} (${index})`);
@@ -770,39 +826,3 @@
           if (activeTargets.size <= 1) {
             alertMultiple.style.display = "none";
           }
-
-          if (activeTargets.size === 1) {
-            const remainingIndex = Array.from(activeTargets)[0];
-            const remainingConfig = videoConfigs[remainingIndex];
-            currentPlayingIndex = remainingIndex;
-            setPlaneToVideo(remainingConfig);
-            remainingConfig.video.currentTime = 0;
-            playVideo(remainingConfig, audioUnlocked);
-          }
-        });
-
-        config.video.addEventListener("ended", () => {
-          setPlaneToPoster(config);
-          console.log(`🏁 Terminado: ${config.name}`);
-        });
-      });
-
-      btnConsent?.addEventListener("click", async () => {
-        audioUnlocked = true;
-        localStorage.setItem(LS_KEY, "1");
-        modal.style.display = "none";
-
-        videoConfigs.forEach((config) => {
-          try {
-            config.video.load();
-          } catch (_) {}
-        });
-      });
-
-      console.log("📋 Configuración:");
-      videoConfigs.forEach((config, index) => {
-        console.log(`  ${index}: ${config.name}`);
-      });
-    </script>
-  </body>
-</html>
