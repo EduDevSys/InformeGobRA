@@ -657,13 +657,9 @@
       ];
 
       // Mostrar modal después del splash
-      setTimeout(() => {
-        if (localStorage.getItem(LS_KEY) !== "1") {
-          modal.style.display = "flex";
-        } else {
-          audioUnlocked = true;
-        }
-      }, 3500);
+		setTimeout(() => {
+		  modal.style.display = "flex";
+		}, 3500);
 
       function setPlaneToVideo(config) {
         config.plane.setAttribute(
