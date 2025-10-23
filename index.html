@@ -169,33 +169,99 @@
         display: none;
         align-items: center;
         justify-content: center;
-        background: rgba(0, 0, 0, 0.7);
+        background: rgba(0, 0, 0, 0.85);
         z-index: 10000;
+        padding: 20px;
       }
       #modal .card {
-        width: min(92%, 420px);
-        background: #fff;
+        width: min(94%, 520px);
+        max-height: 90vh;
+        overflow-y: auto;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
         color: #111;
-        border-radius: 16px;
-        padding: 18px;
+        border-radius: 20px;
+        padding: 32px 24px;
         text-align: center;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        border: 3px solid var(--gold);
       }
       #modal h2 {
         margin: 0 0 8px;
-        font-size: 18px;
+        font-size: 26px;
+        color: var(--primary-dark);
+        font-weight: 800;
+        text-transform: uppercase;
       }
-      #modal p {
-        margin: 0 0 14px;
+      #modal .subtitle {
+        font-size: 16px;
+        color: #555;
+        margin: 0 0 24px;
+        font-weight: 500;
+      }
+      .instructions-list {
+        text-align: left;
+        margin: 0 0 24px;
+        padding: 0;
+        list-style: none;
+      }
+      .instructions-list li {
+        padding: 14px 16px;
+        margin-bottom: 12px;
+        background: #fff;
+        border-radius: 12px;
+        font-size: 15px;
+        line-height: 1.6;
+        color: #333;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border-left: 4px solid var(--primary);
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .instructions-list li .icon {
+        font-size: 24px;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+      .instructions-list li strong {
+        color: var(--primary-dark);
+      }
+      .hashtags-box {
+        background: black;
+        color: #ffffff !important;
+        padding: 16px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 12px rgba(11, 150, 133, 0.3);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
       }
       #modal button {
-        padding: 10px 14px;
+        padding: 16px 32px;
         border: 0;
-        border-radius: 10px;
-        font-weight: 700;
-        background: #0b9685;
-        color: #fff;
+        border-radius: 12px;
+        font-weight: 800;
+        font-size: 18px;
+        background: linear-gradient(
+          135deg,
+          var(--primary) 0%,
+          var(--primary-dark) 100%
+        );
+        color: #fff !important;
         cursor: pointer;
+        box-shadow: 0 6px 20px rgba(11, 150, 133, 0.4);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      #modal button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(11, 150, 133, 0.5);
+      }
+      #modal button:active {
+        transform: translateY(0);
       }
 
       /* ---------- LOGOS ---------- */
@@ -413,13 +479,64 @@
         font-size: 20px;
         order: 1;
       }
+      .hashtags-copy-section {
+        order: 2;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 16px;
+        border-radius: 12px;
+        margin-bottom: 16px;
+        border: 2px solid var(--primary);
+      }
+
+      .hashtags-copy-section p {
+        margin: 0 0 12px;
+        font-size: 14px;
+        color: #333;
+        font-weight: 600;
+        line-height: 1.6;
+      }
+
+      .copy-hashtags-btn {
+        width: 100%;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(
+          135deg,
+          var(--primary) 0%,
+          var(--primary-dark) 100%
+        );
+        color: #fff;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px 12px rgba(11, 150, 133, 0.3);
+      }
+
+      .copy-hashtags-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(11, 150, 133, 0.4);
+      }
+
+      .copy-hashtags-btn:active {
+        transform: translateY(0);
+      }
+
+      .copy-hashtags-btn.copied {
+        background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+      }
       .share-buttons {
         display: flex;
         justify-content: center;
         gap: 16px;
         flex-wrap: wrap;
         margin-bottom: 16px;
-        order: 2;
+        order: 3;
       }
       #capturedImage {
         width: 100%;
@@ -469,6 +586,8 @@
         background: #000;
       }
       .share-btn.download {
+        font-weight: 700 !important;
+        font-size: 15px;
         background: #0b9685;
         width: 100%;
         padding: 10px 20px;
@@ -487,6 +606,78 @@
         cursor: pointer;
         font-weight: 600;
         order: 5;
+      }
+      /* Responsive para modal de instrucciones */
+      @media (max-width: 480px) {
+        #modal .card {
+          padding: 24px 16px;
+          width: min(96%, 520px);
+        }
+
+        #modal h2 {
+          font-size: 22px;
+        }
+
+        #modal .subtitle {
+          font-size: 14px;
+        }
+
+        .instructions-list li {
+          padding: 12px 14px;
+          font-size: 14px;
+        }
+
+        .instructions-list li .icon {
+          font-size: 20px;
+        }
+
+        .hashtags-box {
+          font-size: 13px;
+          padding: 14px;
+        }
+
+        #modal button {
+          padding: 14px 24px;
+          font-size: 16px;
+        }
+      }
+
+      @media (max-height: 600px) {
+        #modal .card {
+          max-height: 85vh;
+          padding: 20px 16px;
+        }
+
+        #modal h2 {
+          font-size: 20px;
+          margin-bottom: 6px;
+        }
+
+        #modal .subtitle {
+          font-size: 13px;
+          margin-bottom: 16px;
+        }
+
+        .instructions-list {
+          margin-bottom: 16px;
+        }
+
+        .instructions-list li {
+          padding: 10px 12px;
+          margin-bottom: 8px;
+          font-size: 13px;
+        }
+
+        .hashtags-box {
+          padding: 12px;
+          margin-bottom: 16px;
+          font-size: 12px;
+        }
+
+        #modal button {
+          padding: 12px 24px;
+          font-size: 16px;
+        }
       }
 
       @media (min-width: 768px) {
@@ -548,9 +739,14 @@
           font-size: 18px;
           margin-bottom: 12px;
         }
+        .hashtags-copy-section {
+          width: 100%;
+          order: 2;
+        }
+
         .share-buttons {
           width: auto;
-          order: 1;
+          order: 3;
           flex-direction: column;
           gap: 12px;
           margin: 0 16px 0 0;
@@ -602,6 +798,97 @@
           bottom: calc(60px + var(--sab));
         }
       }
+      :root {
+        --primary: #0b9685;
+        --primary-dark: #087a6c;
+        --gold: #c8a646;
+      }
+
+      /* Card del modal: asegura contraste y un borde dorado real */
+      #modal .card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        color: #111;
+        border: 3px solid var(--gold);
+      }
+
+      /* Caja de hashtags: mejor legibilidad, envoltura y separación */
+      .hashtags-box {
+        background: black;
+        color: #fff !important;
+        padding: 16px 18px;
+        border-radius: 12px;
+        margin: 0 0 20px 0;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        line-height: 1.4;
+        text-align: center;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        box-shadow: 0 4px 12px rgba(11, 150, 133, 0.3);
+      }
+
+      /* Botón principal: tamaño táctil y contraste consistente */
+      #modal button#btnConsent {
+        display: block;
+        width: 100%;
+        max-width: 420px;
+        margin: 0 auto;
+        padding: 16px 28px;
+        border-radius: 14px;
+        font-weight: 800;
+        font-size: 18px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        background: linear-gradient(
+          135deg,
+          var(--primary) 0%,
+          var(--primary-dark) 100%
+        );
+        color: #fff !important;
+        box-shadow: 0 8px 22px rgba(11, 150, 133, 0.35);
+        border: none;
+      }
+
+      #modal button#btnConsent:hover {
+        transform: translateY(-1px);
+      }
+      #modal button#btnConsent:active {
+        transform: translateY(0);
+      }
+
+      /* Mobile: más grande y centrado */
+      @media (max-width: 480px) {
+        .hashtags-box {
+          font-size: 13px;
+          padding: 14px 16px;
+        }
+        #modal button#btnConsent {
+          font-size: 16px;
+          padding: 14px 22px;
+          max-width: none;
+        }
+      }
+
+      /* Alturas pequeñas: evita que se “aplasten” */
+      @media (max-height: 600px) {
+        #modal .card {
+          padding-bottom: 16px;
+        }
+        .hashtags-box {
+          margin-bottom: 14px;
+        }
+        #modal button#btnConsent {
+          padding: 12px 20px;
+        }
+      }
+
+      /* Accesibilidad al foco teclado */
+      #modal button#btnConsent:focus-visible {
+        outline: 3px solid #ffffff;
+        outline-offset: 3px;
+        box-shadow: 0 0 0 4px rgba(11, 150, 133, 0.35);
+      }
     </style>
   </head>
   <body>
@@ -617,9 +904,46 @@
     <!-- MODAL: permiso de audio -->
     <div id="modal">
       <div class="card">
-        <h2>Activar audio</h2>
-        <p>Para empezar permita activar el audio.</p>
-        <button id="btnConsent">🔊 Permitir audio</button>
+        <h2>🐆 Bienvenido a Jaguar AR</h2>
+        <p class="subtitle">Primer Informe de Gobierno · Chiapas</p>
+
+        <ul class="instructions-list">
+          <li>
+            <span class="icon">📷</span>
+            <div>
+              <strong>Permite el acceso a tu cámara</strong><br />
+              Necesitamos usar tu cámara para aplicar el filtro de Jaguar
+            </div>
+          </li>
+          <li>
+            <span class="icon">🔊</span>
+            <div>
+              <strong>Activa el audio</strong><br />
+              Disfruta de una experiencia inmersiva con sonido ambiental
+            </div>
+          </li>
+          <li>
+            <span class="icon">👥</span>
+            <div>
+              <strong>¡Captura hasta 2 personas!</strong><br />
+              El filtro puede detectar y aplicar la máscara de Jaguar a
+              <strong>dos rostros simultáneamente</strong>
+            </div>
+          </li>
+          <li>
+            <span class="icon">📱</span>
+            <div>
+              <strong>Comparte tu experiencia</strong><br />
+              Usa nuestros hashtags oficiales en tus redes sociales
+            </div>
+          </li>
+        </ul>
+
+        <div class="hashtags-box">
+          #EduardoRamirez #1erInformeRA #HumanismoQueTransforma
+        </div>
+
+        <button id="btnConsent">🚀 Comenzar Experiencia</button>
       </div>
     </div>
 
@@ -638,6 +962,13 @@
     <div id="shareModal">
       <div class="card">
         <h2>¡Foto capturada! 📸</h2>
+        <div class="hashtags-copy-section">
+          <p>#EduardoRamirez #1erInformeRA #HumanismoQueTransforma</p>
+          <button class="copy-hashtags-btn" id="copyHashtagsBtn">
+            <span>📋</span>
+            <span class="btn-text">Copiar</span>
+          </button>
+        </div>
         <div class="share-buttons">
           <button
             class="share-btn whatsapp"
@@ -753,6 +1084,7 @@
       const shareModal = document.getElementById("shareModal");
       const capturedImage = document.getElementById("capturedImage");
       const closeShare = document.getElementById("closeShare");
+      const copyHashtagsBtn = document.getElementById("copyHashtagsBtn");
       const captureOverlay = document.getElementById("captureOverlay");
       const video = document.getElementById("video");
       const canvas = document.getElementById("canvas");
@@ -774,7 +1106,6 @@
       const maskImages = [
         { img: new Image(), src: "Assets/imgs/facemasks/2.png" },
         { img: new Image(), src: "Assets/imgs/facemasks/1.png" },
-        { img: new Image(), src: "Assets/imgs/facemasks/3.png" },
       ];
 
       maskImages.forEach((mask) => {
@@ -842,7 +1173,7 @@
       });
 
       faceMesh.setOptions({
-        maxNumFaces: 3,
+        maxNumFaces: 2,
         refineLandmarks: true,
         minDetectionConfidence: 0.5,
         minTrackingConfidence: 0.5,
@@ -1097,6 +1428,30 @@
           a.click();
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
+        }
+      });
+
+      // Copiar hashtags al portapapeles
+      copyHashtagsBtn.addEventListener("click", async () => {
+        const HASHTAGS_TEXT =
+          "#EduardoRamirez #1erInformeRA #HumanismoQueTransforma";
+
+        try {
+          await navigator.clipboard.writeText(HASHTAGS_TEXT);
+          const btnText = copyHashtagsBtn.querySelector(".btn-text");
+          const originalText = btnText.textContent;
+
+          copyHashtagsBtn.classList.add("copied");
+          btnText.textContent = "¡Copiado! ✓";
+
+          setTimeout(() => {
+            copyHashtagsBtn.classList.remove("copied");
+            btnText.textContent = originalText;
+          }, 2000);
+        } catch (error) {
+          alert(
+            "No se pudo copiar. Por favor, copia manualmente: " + HASHTAGS_TEXT
+          );
         }
       });
 
