@@ -1,4 +1,4 @@
-
+<!-- EJEMPLO FUNCIONAL PERO CON 3 SE SATURA -->
 <!DOCTYPE html>
 <html>
   <head>
@@ -11,6 +11,9 @@
       :root {
         --sat: env(safe-area-inset-top, 0px);
         --sab: env(safe-area-inset-bottom, 0px);
+
+        --btn-size: clamp(80px, 11vw, 116px);
+        --btn-icon: clamp(28px, 4.6vw, 44px);
       }
       * {
         box-sizing: border-box;
@@ -40,6 +43,50 @@
         position: fixed;
         inset: 0;
         overflow: hidden;
+      }
+      .alert-box.show {
+        display: block;
+        animation: slideDown 0.3s ease;
+      }
+
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateX(-50%) translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+      }
+
+      .alert-box h3 {
+        margin: 0 0 10px 0;
+        color: #0b9685;
+        font-size: 18px;
+      }
+
+      .alert-box p {
+        margin: 8px 0;
+        line-height: 1.5;
+        font-size: 14px;
+      }
+
+      .alert-box .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #999;
+        padding: 5px;
+        line-height: 1;
+      }
+
+      .alert-box .close-btn:hover {
+        color: #333;
       }
       #video {
         position: absolute;
@@ -246,22 +293,41 @@
       @media (orientation: portrait) {
         #btnCamera {
           left: auto;
-          right: 16px;
-          width: 64px;
-          height: 64px;
+          right: 18px;
+          bottom: calc(92px + var(--sab));
+          width: var(--btn-size);
+          height: var(--btn-size);
           padding: 0;
-          gap: 0;
           min-width: 0;
           justify-content: center;
+          align-items: center;
+          flex-direction: column;
+          border-radius: 999px;
+          font-size: 16px;
+          line-height: 1.1;
+          text-align: center;
+          background: radial-gradient(circle at 30% 30%, #00c4a8, #0b9685);
+          box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55),
+            0 0 0 3px rgba(255, 255, 255, 0.16) inset;
         }
 
         #btnCamera span {
-          display: none;
+          display: block;
+          font-weight: 700;
+          font-size: 15px;
+          color: #fff;
+          letter-spacing: 0.5px;
+          margin-top: 4px;
         }
 
         #btnCamera svg {
-          width: 28px;
-          height: 28px;
+          display: none;
+        }
+
+        #btnCamera::before {
+          content: "📸";
+          font-size: clamp(32px, 5vw, 44px);
+          line-height: 1;
         }
       }
 
@@ -531,9 +597,9 @@
           border-width: 3px;
         }
         #btnCamera {
-          width: 52px;
-          height: 52px;
-          bottom: calc(50px + var(--sab));
+          width: clamp(64px, 12vw, 80px);
+          height: clamp(64px, 12vw, 80px);
+          bottom: calc(60px + var(--sab));
         }
       }
     </style>
@@ -620,6 +686,13 @@
         <img id="capturedImage" alt="Foto capturada" />
         <button id="closeShare">Cerrar</button>
       </div>
+    </div>
+
+    <!-- Alert Box -->
+    <div class="alert-box" id="alertBox">
+      <button class="close-btn" onclick="closeAlert()">×</button>
+      <h3 id="alertTitle"></h3>
+      <div id="alertMessage"></div>
     </div>
 
     <!-- Logos -->
@@ -1028,444 +1101,174 @@
       });
 
       // Compartir en WhatsApp
-      document
-        .getElementById("shareWhatsapp")
-        .addEventListener("click", async () => {
-          const shareText =
-            "¡Mira mi foto con el filtro de Jaguar AR! Primer Informe de Gobierno Chiapas #EduardoRamirez #1erInformeChiapas";
+      document.getElementById("shareWhatsapp").addEventListener("click", () => {
+        shareToSocial("whatsapp", capturedBlob);
+      });
 
-          if (!capturedBlob) {
-            alert("Primero captura una foto");
-            return;
-          }
+      document.getElementById("shareFacebook").addEventListener("click", () => {
+        shareToSocial("facebook", capturedBlob);
+      });
 
-          // En móvil, usar WhatsApp directamente si está disponible
-          const isMobile = /Android|iPhone|iPad|iPod/i.test(
-            navigator.userAgent
-          );
-
-          if (isMobile) {
-            try {
-              // Crear enlace temporal para descargar la imagen
-              const url = URL.createObjectURL(capturedBlob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = "jaguar-ar.png";
-              a.click();
-              URL.revokeObjectURL(url);
-
-              // Dar tiempo para que se descargue y luego abrir WhatsApp con el texto
-              setTimeout(() => {
-                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(
-                  shareText
-                )}`;
-                window.open(whatsappUrl, "_blank");
-              }, 1000);
-              return;
-            } catch (err) {
-              console.log("Error con método directo:", err);
-            }
-          }
-
-          // Fallback: usar Web Share API
-          if (navigator.share) {
-            try {
-              const file = new File([capturedBlob], "jaguar-ar.png", {
-                type: "image/png",
-              });
-
-              const shareData = {
-                files: [file],
-                title: "Filtro Jaguar AR",
-                text: shareText,
-              };
-
-              if (navigator.canShare && navigator.canShare(shareData)) {
-                await navigator.share(shareData);
-              } else {
-                // Si no puede compartir con archivo, solo compartir texto
-                await navigator.share({
-                  title: "Filtro Jaguar AR",
-                  text: shareText,
-                });
-              }
-            } catch (err) {
-              if (err && err.name === "AbortError") return;
-              console.log("Error compartiendo:", err);
-            }
-          } else {
-            alert(
-              "Tu navegador no soporta compartir. La imagen se descargará."
-            );
-            const url = URL.createObjectURL(capturedBlob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "jaguar-ar.png";
-            a.click();
-            URL.revokeObjectURL(url);
-          }
-        });
-
-      // Compartir en Facebook
-      document
-        .getElementById("shareFacebook")
-        .addEventListener("click", async () => {
-          const shareText =
-            "¡Mira mi foto con el filtro de Jaguar AR! Primer Informe de Gobierno Chiapas #EduardoRamirez #1erInformeChiapas";
-
-          if (!capturedBlob) {
-            alert("Primero captura una foto");
-            return;
-          }
-
-          const isMobile = /Android|iPhone|iPad|iPod/i.test(
-            navigator.userAgent
-          );
-
-          // Intentar usar Web Share API primero (funciona mejor en móvil)
-          if (navigator.share) {
-            try {
-              const file = new File([capturedBlob], "jaguar-ar-chiapas.png", {
-                type: "image/png",
-              });
-
-              const shareData = {
-                files: [file],
-                title: "Filtro Jaguar AR",
-                text: shareText,
-              };
-
-              // Verificar si puede compartir archivos
-              if (navigator.canShare && navigator.canShare(shareData)) {
-                await navigator.share(shareData);
-                return;
-              }
-            } catch (err) {
-              if (err && err.name === "AbortError") return;
-              console.log("Error con Web Share API:", err);
-            }
-          }
-
-          // Fallback: descargar imagen y mostrar instrucciones
-          const url = URL.createObjectURL(capturedBlob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "jaguar-ar-chiapas.png";
-          a.click();
-          URL.revokeObjectURL(url);
-
-          // Mostrar mensaje con instrucciones
-          const mensaje = isMobile
-            ? "✅ Imagen descargada.\n\n📱 Ve a Facebook y crea una nueva publicación para adjuntar la imagen.\n\n📝 Texto sugerido:\n" +
-              shareText
-            : "✅ Imagen descargada.\n\n💻 Abre Facebook, crea una publicación y adjunta la imagen descargada.\n\n📝 Texto sugerido:\n" +
-              shareText;
-
-          // Copiar el texto al portapapeles si es posible
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            try {
-              await navigator.clipboard.writeText(shareText);
-              alert(
-                mensaje + "\n\n📋 El texto ha sido copiado al portapapeles."
-              );
-            } catch (err) {
-              alert(mensaje);
-            }
-          } else {
-            alert(mensaje);
-          }
-
-          // Opcional: abrir Facebook después de un momento
-          setTimeout(() => {
-            if (isMobile) {
-              // Intentar abrir la app de Facebook
-              window.location.href =
-                "fb://facewebmodal/f?href=https://www.facebook.com";
-              // Fallback al navegador después de 1 segundo
-              setTimeout(() => {
-                window.open("https://www.facebook.com", "_blank");
-              }, 1000);
-            } else {
-              window.open("https://www.facebook.com", "_blank");
-            }
-          }, 2000);
-        });
-
-      // Compartir en Instagram
       document
         .getElementById("shareInstagram")
-        .addEventListener("click", async () => {
-          const shareText =
-            "¡Mira mi foto con el filtro de Jaguar AR! Primer Informe de Gobierno Chiapas #EduardoRamirez #1erInformeChiapas #JaguarAR #Chiapas";
-
-          if (!capturedBlob) {
-            alert("Primero captura una foto");
-            return;
-          }
-
-          const isMobile = /Android|iPhone|iPad|iPod/i.test(
-            navigator.userAgent
-          );
-          const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-          // Intentar usar Web Share API primero (funciona mejor en móvil)
-          if (navigator.share && isMobile) {
-            try {
-              const file = new File([capturedBlob], "jaguar-ar-chiapas.jpg", {
-                type: "image/jpeg", // Instagram prefiere JPEG
-              });
-
-              const shareData = {
-                files: [file],
-                title: "Filtro Jaguar AR",
-                text: shareText,
-              };
-
-              // Verificar si puede compartir archivos
-              if (navigator.canShare && navigator.canShare(shareData)) {
-                await navigator.share(shareData);
-                return;
-              }
-            } catch (err) {
-              if (err && err.name === "AbortError") return;
-              console.log("Error con Web Share API:", err);
-            }
-          }
-
-          // Convertir a JPEG para mejor compatibilidad con Instagram
-          const canvas = document.createElement("canvas");
-          const img = new Image();
-          const imgUrl = URL.createObjectURL(capturedBlob);
-
-          img.onload = async () => {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0);
-
-            canvas.toBlob(
-              async (jpegBlob) => {
-                URL.revokeObjectURL(imgUrl);
-
-                // Descargar la imagen
-                const url = URL.createObjectURL(jpegBlob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = "jaguar-ar-chiapas.jpg";
-                a.click();
-                URL.revokeObjectURL(url);
-
-                // Copiar el texto al portapapeles
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                  try {
-                    await navigator.clipboard.writeText(shareText);
-                  } catch (err) {
-                    console.log("No se pudo copiar al portapapeles:", err);
-                  }
-                }
-
-                // Mostrar mensaje con instrucciones
-                const mensaje = isMobile
-                  ? "✅ Imagen descargada en formato JPG.\n\n📱 PASOS:\n1. Abre Instagram\n2. Toca el botón +\n3. Selecciona la imagen descargada\n4. Pega el texto copiado\n\n📋 El texto ya está en tu portapapeles, solo pégalo."
-                  : "✅ Imagen descargada.\n\n💻 PASOS:\n1. Abre Instagram en tu móvil\n2. Crea una nueva publicación\n3. Selecciona la imagen descargada\n4. Pega el texto\n\n📝 Texto copiado:\n" +
-                    shareText;
-
-                alert(mensaje);
-
-                // Intentar abrir Instagram después de un momento
-                setTimeout(() => {
-                  if (isMobile) {
-                    if (isIOS) {
-                      // iOS: intentar abrir la app de Instagram
-                      window.location.href = "instagram://library";
-                      // Fallback a la web después de 1 segundo
-                      setTimeout(() => {
-                        window.open("https://www.instagram.com", "_blank");
-                      }, 1000);
-                    } else {
-                      // Android: intentar abrir la app de Instagram
-                      window.location.href =
-                        "intent://instagram.com/#Intent;scheme=https;package=com.instagram.android;end";
-                      // Fallback a la web
-                      setTimeout(() => {
-                        window.open("https://www.instagram.com", "_blank");
-                      }, 1000);
-                    }
-                  } else {
-                    // En escritorio, solo abrir el sitio web
-                    window.open("https://www.instagram.com", "_blank");
-                  }
-                }, 2000);
-              },
-              "image/jpeg",
-              0.95
-            );
-          };
-
-          img.src = imgUrl;
+        .addEventListener("click", () => {
+          shareToSocial("instagram", capturedBlob);
         });
 
-      // Compartir en X (Twitter)
-      document.getElementById("shareX").addEventListener("click", async () => {
-        const shareText =
-          "¡Mira mi foto con el filtro de Jaguar AR! Primer Informe de Gobierno Chiapas #EduardoRamirez #1erInformeChiapas #JaguarAR #Chiapas";
+      document.getElementById("shareX").addEventListener("click", () => {
+        shareToSocial("x", capturedBlob);
+      });
 
-        if (!capturedBlob) {
-          alert("Primero captura una foto");
-          return;
-        }
+      const SHARE_CONFIG = {
+        text: "¡Mira mi foto con el filtro de Jaguar AR! Primer Informe de Gobierno Chiapas #EduardoRamirez #1erInformeChiapas #JaguarAR #Chiapas",
+        title: "Filtro Jaguar AR",
+        filename: "jaguar-ar-chiapas.jpg",
+      };
 
-        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-        // Intentar usar Web Share API primero (funciona mejor en móvil)
-        if (navigator.share && isMobile) {
+      async function shareToSocial(platform, imageBlob) {
+        if (navigator.share && navigator.canShare) {
           try {
-            const file = new File([capturedBlob], "jaguar-ar-chiapas.jpg", {
+            const file = new File([imageBlob], SHARE_CONFIG.filename, {
               type: "image/jpeg",
             });
 
             const shareData = {
               files: [file],
-              title: "Filtro Jaguar AR",
-              text: shareText,
+              title: SHARE_CONFIG.title,
+              text: SHARE_CONFIG.text,
             };
 
-            // Verificar si puede compartir archivos
-            if (navigator.canShare && navigator.canShare(shareData)) {
+            if (navigator.canShare(shareData)) {
               await navigator.share(shareData);
-              return;
+              console.log(`✅ Compartido exitosamente en ${platform}`);
+              return true;
             }
-          } catch (err) {
-            if (err && err.name === "AbortError") return;
-            console.log("Error con Web Share API:", err);
+          } catch (error) {
+            if (error.name === "AbortError") {
+              console.log("Usuario canceló el compartir");
+              return false;
+            }
+            console.log("Error con Web Share API:", error);
           }
         }
 
-        // Convertir a JPEG optimizado para X/Twitter
+        downloadImageWithMessage(platform, imageBlob);
+        return false;
+      }
+
+      function downloadImageWithMessage(platform, imageBlob) {
+        const url = URL.createObjectURL(imageBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = SHARE_CONFIG.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        let clipboardSuccess = false;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard
+            .writeText(SHARE_CONFIG.text)
+            .then(() => {
+              clipboardSuccess = true;
+              showCustomAlert(platform, true);
+            })
+            .catch(() => {
+              showCustomAlert(platform, false);
+            });
+        } else {
+          showCustomAlert(platform, false);
+        }
+      }
+
+      function showCustomAlert(platform, textCopied) {
+        const platformNames = {
+          whatsapp: "WhatsApp",
+          facebook: "Facebook",
+          instagram: "Instagram",
+          x: "X (Twitter)",
+        };
+
+        const alertBox = document.getElementById("alertBox");
+        const alertTitle = document.getElementById("alertTitle");
+        const alertMessage = document.getElementById("alertMessage");
+
+        alertTitle.textContent = "📥 Imagen descargada";
+
+        let message = `
+        <p><strong>⚠️ Tu navegador no soporta compartir directamente</strong></p>
+        <p>La imagen ha sido descargada automáticamente.</p>
+        <p><strong>📋 Pasos para compartir en ${
+          platformNames[platform]
+        }:</strong></p>
+        <p>1️⃣ Abre la aplicación de ${platformNames[platform]}<br>
+        2️⃣ Crea una nueva publicación<br>
+        3️⃣ Adjunta la imagen descargada<br>
+        4️⃣ ${
+          textCopied
+            ? "Pega el texto (ya está copiado en tu portapapeles)"
+            : "Copia y pega este texto:"
+        }</p>
+      `;
+
+        if (!textCopied) {
+          message += `
+          <p style="background: #f0f0f0; padding: 10px; border-radius: 6px; margin-top: 10px; color: #333; font-size: 12px;">
+            ${SHARE_CONFIG.text}
+          </p>
+        `;
+        }
+
+        message += `<p style="margin-top: 15px; font-size: 12px; color: #666;">💡 Actualiza tu navegador para mejorar la experiencia de compartir.</p>`;
+
+        alertMessage.innerHTML = message;
+        alertBox.classList.add("show");
+
+        setTimeout(() => {
+          closeAlert();
+        }, 12000);
+      }
+
+      function closeAlert() {
+        const alertBox = document.getElementById("alertBox");
+        alertBox.classList.remove("show");
+      }
+
+      async function getDemoImageBlob() {
+        const img = document.getElementById("demoImage");
         const canvas = document.createElement("canvas");
-        const img = new Image();
-        const imgUrl = URL.createObjectURL(capturedBlob);
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
 
-        img.onload = async () => {
-          // X/Twitter acepta hasta 16:9, pero 2:1 es ideal para timeline
-          const originalRatio = img.width / img.height;
-          let targetWidth, targetHeight;
-
-          // Optimizar para el timeline de X
-          if (originalRatio > 2) {
-            // Muy horizontal, ajustar a 2:1
-            targetWidth = 1200;
-            targetHeight = 600;
-          } else if (originalRatio < 0.5) {
-            // Muy vertical, ajustar a 1:2
-            targetWidth = 600;
-            targetHeight = 1200;
-          } else {
-            // Mantener proporción original, máximo 1200px de ancho
-            const maxWidth = 1200;
-            if (img.width > maxWidth) {
-              targetWidth = maxWidth;
-              targetHeight = Math.round(maxWidth / originalRatio);
-            } else {
-              targetWidth = img.width;
-              targetHeight = img.height;
-            }
-          }
-
-          canvas.width = targetWidth;
-          canvas.height = targetHeight;
-          const ctx = canvas.getContext("2d");
-
-          // Fondo blanco
-          ctx.fillStyle = "#FFFFFF";
-          ctx.fillRect(0, 0, targetWidth, targetHeight);
-
-          // Calcular el escalado para que la imagen quepa completa
-          const scale = Math.min(
-            targetWidth / img.width,
-            targetHeight / img.height
-          );
-          const scaledWidth = img.width * scale;
-          const scaledHeight = img.height * scale;
-
-          // Centrar la imagen
-          const x = (targetWidth - scaledWidth) / 2;
-          const y = (targetHeight - scaledHeight) / 2;
-
-          ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
-
+        return new Promise((resolve) => {
           canvas.toBlob(
-            async (jpegBlob) => {
-              URL.revokeObjectURL(imgUrl);
-
-              // Descargar la imagen
-              const url = URL.createObjectURL(jpegBlob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = "jaguar-ar-chiapas.jpg";
-              a.click();
-              URL.revokeObjectURL(url);
-
-              // Copiar el texto al portapapeles
-              if (navigator.clipboard && navigator.clipboard.writeText) {
-                try {
-                  await navigator.clipboard.writeText(shareText);
-                } catch (err) {
-                  console.log("No se pudo copiar al portapapeles:", err);
-                }
-              }
-
-              // Mostrar mensaje con instrucciones
-              const mensaje = isMobile
-                ? "✅ Imagen descargada optimizada para X.\n\n📱 PASOS:\n1. Abre X (Twitter)\n2. Toca el botón para nuevo post\n3. Adjunta la imagen descargada\n4. Pega el texto (ya está copiado)\n\n🚀 Listo para postear!"
-                : "✅ Imagen descargada.\n\n💻 PASOS:\n1. Abre X (Twitter)\n2. Crea un nuevo post\n3. Adjunta la imagen descargada\n4. Pega el texto\n\n📝 Texto copiado:\n" +
-                  shareText;
-
-              alert(mensaje);
-
-              // Intentar abrir X/Twitter después de un momento
-              setTimeout(() => {
-                if (isMobile) {
-                  if (isIOS) {
-                    // iOS: intentar abrir la app de X/Twitter con el texto
-                    const encodedText = encodeURIComponent(shareText);
-                    window.location.href = `twitter://post?message=${encodedText}`;
-                    // Fallback a la web después de 1 segundo
-                    setTimeout(() => {
-                      window.open(
-                        `https://twitter.com/intent/tweet?text=${encodedText}`,
-                        "_blank"
-                      );
-                    }, 1000);
-                  } else {
-                    // Android: intentar abrir la app de X/Twitter
-                    const encodedText = encodeURIComponent(shareText);
-                    window.location.href = `twitter://post?message=${encodedText}`;
-                    // Fallback a la web
-                    setTimeout(() => {
-                      window.open(
-                        `https://twitter.com/intent/tweet?text=${encodedText}`,
-                        "_blank"
-                      );
-                    }, 1000);
-                  }
-                } else {
-                  // En escritorio, abrir el composer de Twitter con el texto
-                  const encodedText = encodeURIComponent(shareText);
-                  window.open(
-                    `https://twitter.com/intent/tweet?text=${encodedText}`,
-                    "_blank"
-                  );
-                }
-              }, 2000);
+            (blob) => {
+              resolve(blob);
             },
             "image/jpeg",
             0.92
           );
-        };
+        });
+      }
 
-        img.src = imgUrl;
+      document.querySelectorAll(".share-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const platform = btn.dataset.platform;
+          console.log(`Compartiendo en ${platform}...`);
+
+          const imageBlob = await getDemoImageBlob();
+
+          await shareToSocial(platform, imageBlob);
+        });
+      });
+
+      document.getElementById("alertBox").addEventListener("click", (e) => {
+        if (e.target.id === "alertBox") {
+          closeAlert();
+        }
       });
       // Iniciar aplicación
       startCamera();
