@@ -891,6 +891,14 @@
           material="shader:flat; src:#video5; transparent:true"
         ></a-plane>
       </a-entity>
+      <a-entity id="target6" mindar-image-target="targetIndex: 5">
+        <a-plane
+          position="0 0 0"
+          width="1.5"
+          height="1.5"
+          material="shader:flat; color:#00d9ff; transparent:true; opacity:0.5; emissive:#00d9ff; emissiveIntensity:0.8"
+        ></a-plane>
+      </a-entity>
     </a-scene>
 
     <script>
@@ -907,6 +915,7 @@
       let activeTargets = new Set();
       let currentPlayingIndex = null;
       let alertTimeout = null;
+      let qrRedirectExecuted = false;
 
       const videoConfigs = [
         {
@@ -1075,6 +1084,28 @@
           setPlaneToPoster(config);
           console.log(`🏁 Terminado: ${config.name}`);
         });
+      });
+
+      // MANEJADOR PARA EL QR CODE (target6 - índice 5)
+      const qrTarget = document.getElementById("target6");
+
+      qrTarget.addEventListener("targetFound", () => {
+        console.log("🔗 QR Code detectado - Redirigiendo...");
+
+        if (!qrRedirectExecuted) {
+          qrRedirectExecuted = true;
+          hideRadar();
+          showLogos();
+
+          setTimeout(() => {
+            window.location.href = "https://edudevsys.github.io/InformeGobRA/";
+          }, 500);
+        }
+      });
+
+      qrTarget.addEventListener("targetLost", () => {
+        console.log("👋 QR Code perdido");
+        qrRedirectExecuted = false;
       });
 
       btnConsent?.addEventListener("click", async () => {
